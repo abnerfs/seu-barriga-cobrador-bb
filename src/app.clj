@@ -1,7 +1,8 @@
 (ns app
   (:require [clojure.string :as string]
             [clojure.edn :as edn]
-            [pod.tzzh.mail :as m]))
+            [pod.tzzh.mail :as m]
+            [clojure.pprint :refer [pprint]]))
 
 (def template  (slurp "resources/template.html"))
 (def env (-> (slurp "resources/env.edn")
@@ -33,7 +34,9 @@
       (assoc :to [email]
              :html (e-mail-template template payer))))
 
-(defn send-emails []
-  (->> (:payers env)
-       (map ->email)
-       (run! m/send-mail)))
+(defn -main []
+  (let [emails        (->> (:payers env)
+                           (map ->email))]
+    (if (:debug env)
+      (run! pprint emails)
+      (run! m/send-mail emails))))
